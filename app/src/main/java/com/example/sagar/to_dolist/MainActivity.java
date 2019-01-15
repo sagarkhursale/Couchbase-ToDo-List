@@ -9,6 +9,9 @@ import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.AdapterView;
+import android.widget.ListView;
+import android.widget.RelativeLayout;
 
 import com.couchbase.lite.CouchbaseLiteException;
 import com.couchbase.lite.Database;
@@ -19,7 +22,7 @@ import java.util.ArrayList;
 import java.util.Date;
 
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements AdapterView.OnItemClickListener {
 
     private final String TAG = MainActivity.class.getSimpleName();
     private final String ID = "id";
@@ -34,6 +37,8 @@ public class MainActivity extends AppCompatActivity {
             new TaskEntry("2", 3, "Android", new Date()),
             new TaskEntry("3", 1, "Cuchbase", new Date())
     };
+
+    private ListView mListView;
 
 
     @Override
@@ -53,8 +58,13 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        final Database database = AppDatabase.getInstance(
-                getApplicationContext());
+        mListView = findViewById(R.id.taskList);
+        RelativeLayout emptyView = findViewById(R.id.empty_view);
+        mListView.setEmptyView(emptyView);
+        mListView.setOnItemClickListener(this);
+
+
+        final Database database = AppDatabase.getInstance(getApplicationContext());
 
         createList(database);
 
@@ -104,6 +114,11 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
+        ListAdapter listAdapter = new ListAdapter(this,
+                tasksFromDatabase);
+        mListView.setAdapter(listAdapter);
+
+
         for (TaskEntry taskEntry : tasksFromDatabase) {
             Log.i(TAG, taskEntry.toString());
         }
@@ -131,6 +146,12 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+
+    @Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
     }
 
 

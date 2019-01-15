@@ -9,7 +9,9 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
@@ -53,24 +55,17 @@ public class ListAdapter extends ArrayAdapter {
             viewHolder.tvUpdatedAt = convertView.findViewById(R.id.taskUpdatedAt);
             viewHolder.tvPriority = convertView.findViewById(R.id.priorityTextView);
 
-
             convertView.setTag(viewHolder);
 
         } else {
             viewHolder = (ViewHolder) convertView.getTag();
         }
 
-
         TaskEntry taskEntry = mTaskList.get(position);
 
-
-        SimpleDateFormat dateFormat = new SimpleDateFormat(
-                "dd/MM/yyyy hh:mm:ss", Locale.getDefault());
-
-
         viewHolder.tvDescription.setText(taskEntry.getDescription());
-        viewHolder.tvUpdatedAt.setText(dateFormat.format(taskEntry.getUpdatedAt()));
-        viewHolder.tvPriority.setText(taskEntry.getPriority());
+        viewHolder.tvUpdatedAt.setText(getTaskTime(taskEntry.getUpdatedAt()));
+        viewHolder.tvPriority.setText(String.valueOf(taskEntry.getPriority()));
 
         return convertView;
     }
@@ -82,6 +77,24 @@ public class ListAdapter extends ArrayAdapter {
         TextView tvPriority;
     }
 
+
+    private String getTaskTime(Date date) {
+        StringBuilder builder = new StringBuilder();
+
+        // time
+        SimpleDateFormat timeFormat = new SimpleDateFormat(
+                "hh:mm:ss", Locale.getDefault());
+        // Date
+        DateFormat dateFormat = DateFormat.
+                getDateInstance(DateFormat.LONG);
+
+
+        builder.append(dateFormat.format(date));
+        builder.append("\tat\t");
+        builder.append(timeFormat.format(date));
+
+        return builder.toString();
+    }
 
     // END
 }
