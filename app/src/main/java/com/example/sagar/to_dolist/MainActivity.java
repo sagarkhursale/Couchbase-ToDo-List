@@ -1,5 +1,6 @@
 package com.example.sagar.to_dolist;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -53,8 +54,10 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                Intent intent=new Intent(MainActivity.this,EditorActivity.class);
+                startActivity(intent);
+                /*Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
+                        .setAction("Action", null).show();*/
             }
         });
 
@@ -66,9 +69,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
         final Database database = AppDatabase.getInstance(getApplicationContext());
 
-        createList(database);
+        //createList(database);
 
-        outputContents(database);
+        //outputContents(database);
         //
     }
 
@@ -151,7 +154,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-
+        Intent intent=new Intent(MainActivity.this,EditorActivity.class);
+        intent.putExtra(ID,position);
+        startActivity(intent);
     }
 
 
