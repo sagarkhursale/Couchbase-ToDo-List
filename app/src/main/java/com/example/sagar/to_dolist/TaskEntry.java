@@ -1,16 +1,22 @@
 package com.example.sagar.to_dolist;
 
+import android.support.annotation.NonNull;
+
+import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
+import java.util.logging.SimpleFormatter;
 
 
 public class TaskEntry {
 
-    private int id, priority;
+    private String id;
+    private int priority;
     private String description;
     private Date updatedAt;
 
 
-    public TaskEntry(int id, int priority, String description, Date updatedAt) {
+    TaskEntry(String id, int priority, String description, Date updatedAt) {
         this.id = id;
         this.priority = priority;
         this.description = description;
@@ -18,11 +24,11 @@ public class TaskEntry {
     }
 
 
-    public int getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -50,5 +56,15 @@ public class TaskEntry {
         this.updatedAt = updatedAt;
     }
 
-// END
+
+    @NonNull
+    @Override
+    public String toString() {
+        SimpleDateFormat dateFormat = new SimpleDateFormat(
+                "dd/MM/yyyy hh:mm:ss", Locale.getDefault());
+
+        return id + "\t" + description + "\t" + priority + "\t" + dateFormat.format(updatedAt);
+    }
+
+    // END
 }

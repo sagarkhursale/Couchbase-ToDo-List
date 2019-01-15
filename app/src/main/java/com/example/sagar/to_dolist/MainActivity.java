@@ -10,13 +10,30 @@ import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 
+import com.couchbase.lite.CouchbaseLiteException;
 import com.couchbase.lite.Database;
+import com.couchbase.lite.Document;
+import com.couchbase.lite.MutableDocument;
+
+import java.util.ArrayList;
+import java.util.Date;
 
 
 public class MainActivity extends AppCompatActivity {
 
     private final String TAG = MainActivity.class.getSimpleName();
-    private Database mDb;
+    private final String ID = "id";
+    private final String DESCRIPTION = "description";
+    private final String PRIORITY = "priority";
+    private final String DATE = "updatedAt";
+
+
+    private TaskEntry taskEntries[] = {
+            new TaskEntry("0", 1, "Java", new Date()),
+            new TaskEntry("1", 2, "SQL", new Date()),
+            new TaskEntry("2", 3, "Android", new Date()),
+            new TaskEntry("3", 1, "Cuchbase", new Date())
+    };
 
 
     @Override
@@ -36,11 +53,62 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        mDb = AppDatabase.getInstance(getApplicationContext());
+        final Database database = AppDatabase.getInstance(
+                getApplicationContext());
 
+        createList(database);
+
+        outputContents(database);
         //
     }
 
+
+    private void createList(Database database) {
+
+        for (TaskEntry taskEntry : taskEntries) {
+
+            MutableDocument taskDocument = new MutableDocument(
+                    taskEntry.getId());
+
+            taskDocument.setString(ID, taskEntry.getId());
+            taskDocument.setString(DESCRIPTION, taskEntry.getDescription());
+            taskDocument.setInt(PRIORITY, taskEntry.getPriority());
+            taskDocument.setDate(DATE, taskEntry.getUpdatedAt());
+
+            try {
+                database.save(taskDocument);
+            } catch (CouchbaseLiteException e) {
+                Log.e(TAG, "Save Doc : " + e.toString());
+            }
+        }
+    }
+
+
+    private void outputContents(Database database) {
+        ArrayList<TaskEntry> tasksFromDatabase = new ArrayList<>();
+
+        for (TaskEntry taskEntry : taskEntries) {
+
+            Document document = database.getDocument(taskEntry.getId());
+
+            if (document != null) {
+
+                String id = document.getString(ID);
+                String desc = document.getString(DESCRIPTION);
+                int priority = document.getInt(PRIORITY);
+                Date updatedAt = document.getDate(DATE);
+
+                tasksFromDatabase.add(new TaskEntry(id, priority, desc, updatedAt));
+            } else {
+                Log.i(TAG, "Document is null");
+            }
+        }
+
+        for (TaskEntry taskEntry : tasksFromDatabase) {
+            Log.i(TAG, taskEntry.toString());
+        }
+
+    }
 
 
     @Override
