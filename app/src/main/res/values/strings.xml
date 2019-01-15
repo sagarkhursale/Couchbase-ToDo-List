@@ -1,4 +1,19 @@
 <resources>
     <string name="app_name">To-Do List</string>
     <string name="action_settings">Settings</string>
+
+    <string name="empty_view_title_text">No Records Found</string>
+    <string name="empty_view_subtitle_text">Get started by adding a Task</string>
+
+    <string name="insert_dummy_data">Insert Dummy Data</string>
+    <string name="delete_all_data">Delete All Data</string>
+
+
+    <!-- Editor Activity-->
+    <string name="editor_activity_title_new_task">Add Task</string>
+    <string name="editor_activity_title_edit_task">Edit Task</string>
+    <string name="action_save">Save</string>
+
+
+
 </resources>
