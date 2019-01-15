@@ -8,22 +8,15 @@ import com.couchbase.lite.Database;
 import com.couchbase.lite.DatabaseConfiguration;
 
 
-
-public class AppDatabase {
+class AppDatabase {
     private static final String TAG = AppDatabase.class.getSimpleName();
-    private static final AppDatabase ourInstance = new AppDatabase();
     private static final Object LOCK = new Object();
     private static final String DATABASE = "to-do-list";
+    private static Database database;
 
 
-    public AppDatabase getInstance() {
-        return ourInstance;
-    }
-
-    private Database getDatabase(Context context) {
-        Database database = null;
-
-        if (ourInstance != null) {
+    static Database getInstance(Context context) {
+        if (database == null) {
             synchronized (LOCK) {
                 try {
                     // Helper Object
@@ -35,7 +28,6 @@ public class AppDatabase {
                 }
             }
         }
-
         return database;
     }
 
