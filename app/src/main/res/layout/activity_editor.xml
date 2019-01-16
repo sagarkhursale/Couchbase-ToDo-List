@@ -47,25 +47,23 @@
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:checked="true"
-            android:text="@string/high_priority"
-            android:theme="@style/WhiteRadioButton" />
+            android:text="@string/high_priority" />
 
         <RadioButton
             android:id="@+id/radButton2"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:text="@string/med_priority"
-            android:theme="@style/WhiteRadioButton" />
+            android:text="@string/med_priority" />
 
         <RadioButton
             android:id="@+id/radButton3"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:text="@string/low_priority"
-            android:theme="@style/WhiteRadioButton" />
+            android:text="@string/low_priority" />
 
+        <!--android:theme="@style/WhiteRadioButton"-->
     </RadioGroup>
 
 

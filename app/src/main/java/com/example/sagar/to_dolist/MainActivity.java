@@ -13,6 +13,7 @@ import android.view.MenuItem;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
+import android.widget.Toast;
 
 import com.couchbase.lite.CouchbaseLiteException;
 import com.couchbase.lite.Database;
@@ -54,7 +55,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent=new Intent(MainActivity.this,EditorActivity.class);
+                Intent intent = new Intent(MainActivity.this, EditorActivity.class);
                 startActivity(intent);
                 /*Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
                         .setAction("Action", null).show();*/
@@ -69,10 +70,35 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
         final Database database = AppDatabase.getInstance(getApplicationContext());
 
-        //createList(database);
-
-        //outputContents(database);
+        showTasks(database);
+        /*createList(database);
+        outputContents(database);*/
         //
+    }
+
+
+    private void showTasks(Database database) {
+        ArrayList<TaskEntry> taskList = new ArrayList<>();
+        int count = (int) database.getCount();
+        Log.i(TAG, "count " + count);
+
+        for (int i = 0; i < count; i++) {
+            Document document = database.
+                    getDocument(String.valueOf(i));
+
+            if (document != null) {
+
+                String id = document.getString(ID);
+                String desc = document.getString(DESCRIPTION);
+                int priority = document.getInt(PRIORITY);
+                Date updatedAt = document.getDate(DATE);
+
+                taskList.add(new TaskEntry(id, priority, desc, updatedAt));
+            }
+        }
+
+        ListAdapter listAdapter = new ListAdapter(this, taskList);
+        mListView.setAdapter(listAdapter);
     }
 
 
@@ -154,8 +180,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        Intent intent=new Intent(MainActivity.this,EditorActivity.class);
-        intent.putExtra(ID,position);
+        Intent intent = new Intent(MainActivity.this, EditorActivity.class);
+        intent.putExtra(ID, String.valueOf(taskEntries[position].getId()));
         startActivity(intent);
     }
 
