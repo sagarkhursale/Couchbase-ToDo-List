@@ -34,13 +34,8 @@ public class EditorActivity extends AppCompatActivity implements View.OnClickLis
     private final String PRIORITY = "priority";
     private final String DATE = "updatedAt";
 
-    // views
     private EditText mEditText;
-    private RadioGroup mRadioGroup;
-    private Button mButton;
-
     private static String mTaskId;
-    private Database mDb;
 
 
     @Override
@@ -48,11 +43,8 @@ public class EditorActivity extends AppCompatActivity implements View.OnClickLis
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_editor);
 
-        mDb = AppDatabase.getInstance(getApplicationContext());
-
         mEditText = findViewById(R.id.editTextTaskDescription);
-        mRadioGroup = findViewById(R.id.radioGroup);
-        mButton = findViewById(R.id.saveButton);
+        Button mButton = findViewById(R.id.saveButton);
 
         Bundle bundle = getIntent().getExtras();
         if (bundle != null) {
@@ -64,10 +56,13 @@ public class EditorActivity extends AppCompatActivity implements View.OnClickLis
         }
 
         mButton.setOnClickListener(this);
-
         //
     }
 
+    private Database getDb() {
+        return AppDatabase.getInstance(
+                getApplicationContext());
+    }
 
     private void setEditorTitle(int flag) {
         ActionBar actionBar = getSupportActionBar();
@@ -86,7 +81,7 @@ public class EditorActivity extends AppCompatActivity implements View.OnClickLis
 
 
     private void populateUi(String docId) {
-        Document document = mDb.getDocument(docId);
+        Document document = getDb().getDocument(docId);
 
         if (document != null) {
             mEditText.setText(document.getString(DESCRIPTION));
@@ -112,6 +107,7 @@ public class EditorActivity extends AppCompatActivity implements View.OnClickLis
     public int getPriorityFromViews() {
         int priority = 1;
         int checkedId = ((RadioGroup) findViewById(R.id.radioGroup)).getCheckedRadioButtonId();
+
         switch (checkedId) {
             case R.id.radButton1:
                 priority = PRIORITY_HIGH;
@@ -128,49 +124,55 @@ public class EditorActivity extends AppCompatActivity implements View.OnClickLis
 
     @Override
     public void onClick(View v) {
+        if (mTaskId != null)
+            updateDocument(getDb());
 
-        if (mTaskId != null) {
-            Document document = mDb.getDocument(mTaskId);
-
-            if (document != null) {
-                try {
-                    MutableDocument updateDoc = document.toMutable();
-
-                    updateDoc.setString(ID, mTaskId);
-                    updateDoc.setString(DESCRIPTION, mEditText.getText().toString().trim());
-                    updateDoc.setInt(PRIORITY, getPriorityFromViews());
-                    updateDoc.setDate(DATE, new Date());
-
-                    mDb.save(updateDoc);
-                    Toast.makeText(this, "Task Updated!", Toast.LENGTH_SHORT).show();
-                  //  gotoHome();
-
-                } catch (CouchbaseLiteException e) {
-                    Log.e(TAG, "Edit task : " + e.toString());
-                }
-            }
-        } else {
-            int count = (int) mDb.getCount();
-            Log.i(TAG, "count : " + count);
-
-            try {
-
-                MutableDocument addDoc = new MutableDocument(String.valueOf(count));
-
-                addDoc.setString(ID, String.valueOf(count));
-                addDoc.setString(DESCRIPTION, mEditText.getText().toString().trim());
-                addDoc.setInt(PRIORITY, getPriorityFromViews());
-                addDoc.setDate(DATE, new Date());
-
-                mDb.save(addDoc);
-                Toast.makeText(this, "New Task Added.", Toast.LENGTH_SHORT).show();
-                //gotoHome();
-            } catch (CouchbaseLiteException e) {
-                Log.e(TAG, "Add task : " + e.toString());
-            }
-        }
+        else
+            addDocument(getDb());
 
         // end
+    }
+
+
+    private void addDocument(Database database) {
+        int count = (int) database.getCount();
+        Log.i(TAG, "count : " + count);
+
+        try {
+            MutableDocument addDoc = new MutableDocument(String.valueOf(count));
+
+            addDoc.setString(ID, String.valueOf(count));
+            addDoc.setString(DESCRIPTION, mEditText.getText().toString().trim());
+            addDoc.setInt(PRIORITY, getPriorityFromViews());
+            addDoc.setDate(DATE, new Date());
+
+            database.save(addDoc);
+            Toast.makeText(this, "New Task Added.", Toast.LENGTH_SHORT).show();
+        } catch (CouchbaseLiteException e) {
+            Log.e(TAG, "Add task : " + e.toString());
+        }
+    }
+
+
+    private void updateDocument(Database database) {
+        Document document = database.getDocument(mTaskId);
+
+        if (document != null) {
+            try {
+                MutableDocument updateDoc = document.toMutable();
+
+                updateDoc.setString(ID, mTaskId);
+                updateDoc.setString(DESCRIPTION, mEditText.getText().toString().trim());
+                updateDoc.setInt(PRIORITY, getPriorityFromViews());
+                updateDoc.setDate(DATE, new Date());
+
+                database.save(updateDoc);
+                Toast.makeText(this, "Task Updated!", Toast.LENGTH_SHORT).show();
+
+            } catch (CouchbaseLiteException e) {
+                Log.e(TAG, "Edit task : " + e.toString());
+            }
+        }
     }
 
 
