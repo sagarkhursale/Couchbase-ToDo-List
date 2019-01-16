@@ -33,6 +33,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private static final String DATE = "updatedAt";
 
     private ListView mListView;
+    private ListAdapter mListAdapter;
 
 
     @Override
@@ -47,7 +48,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(MainActivity.this, EditorActivity.class);
+                Intent intent = new Intent(
+                        MainActivity.this, EditorActivity.class);
                 startActivity(intent);
             }
         });
@@ -58,65 +60,101 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         mListView.setOnItemClickListener(this);
 
 
-        final Database database = AppDatabase.getInstance(getApplicationContext());
-
-        showTasks(database);
+        showTasks(getDb());
         //
     }
 
 
-    private void showTasks(Database database) {
-        ArrayList<TaskEntry> taskList = new ArrayList<>();
-        int count = (int) database.getCount();
+    private Database getDb() {
+        return AppDatabase.getInstance(
+                getApplicationContext());
+    }
+
+
+    private void showTasks(final Database database) {
+        final ArrayList<TaskEntry> taskList = new ArrayList<>();
+        final int count = (int) database.getCount();
         Log.i(TAG, "count " + count);
 
-        for (int i = 0; i < count; i++) {
-            Document document = database.
-                    getDocument(String.valueOf(i));
+        try {
+            database.inBatch(new Runnable() {
+                @Override
+                public void run() {
+                    for (int i = 0; i < count; i++) {
+                        Document document = database.getDocument(
+                                String.valueOf(i));
 
-            if (document != null) {
-                String id = document.getString(ID);
-                String desc = document.getString(DESCRIPTION);
-                int priority = document.getInt(PRIORITY);
-                Date updatedAt = document.getDate(DATE);
+                        if (document != null) {
+                            String id = document.getString(ID);
+                            String desc = document.getString(DESCRIPTION);
+                            int priority = document.getInt(PRIORITY);
+                            Date updatedAt = document.getDate(DATE);
 
-                taskList.add(new TaskEntry(id, priority, desc, updatedAt));
-            }
+                            taskList.add(new TaskEntry(id, priority, desc, updatedAt));
+                        }
+                    }
+                }
+            });
+        } catch (CouchbaseLiteException e) {
+            e.printStackTrace();
         }
 
-        ListAdapter listAdapter = new ListAdapter(this, taskList);
-        mListView.setAdapter(listAdapter);
+        mListAdapter = new ListAdapter(this, taskList);
+        mListView.setAdapter(mListAdapter);
+    }
+
+
+    private void deleteAllTasks() {
+        final Database database = getDb();
+        final int count = (int) database.getCount();
+        Log.i(TAG, "Del : " + count);
+
+        try {
+            database.inBatch(new Runnable() {
+                @Override
+                public void run() {
+                    for (int i = 0; i < count; i++) {
+                        try {
+                            database.delete(database.getDocument(String.valueOf(i)));
+                        } catch (CouchbaseLiteException e) {
+                            Log.i(TAG, "Delete i : " + e.toString());
+                        }
+                    }
+                }
+            });
+        } catch (CouchbaseLiteException e) {
+            Log.i(TAG, "Delete : " + e.toString());
+        }
+
+    }
+
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return true;
+    }
+
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+
+        if (id == R.id.action_settings) {
+            deleteAllTasks();
+            mListAdapter.notifyDataSetChanged();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
         Intent intent = new Intent(MainActivity.this, EditorActivity.class);
+        Log.i(TAG, "pos : " + String.valueOf(position));
         intent.putExtra(ID, String.valueOf(position));
         startActivity(intent);
-    }
-
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
     }
 
 
